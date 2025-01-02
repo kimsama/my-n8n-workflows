@@ -1,0 +1,21 @@
+# n8n 인증 정보
+.env
+*.env
+credentials.json
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# IDE 파일
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 로그 파일
+*.log
+
+# 임시 파일
+tmp/
+temp/
