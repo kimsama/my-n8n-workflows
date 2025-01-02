@@ -1,16 +1,14 @@
 # My n8n Workflows
 
-이 저장소는 제가 사용하는 n8n 워크플로우 자동화 설정들을 관리하기 위한 곳입니다.
+This repository manages my n8n workflow automation configurations.
 
-## 구조
+## Structure
 
-- `workflows/`: n8n 워크플로우 JSON 파일들
-- `credentials/`: 인증 정보 템플릿 (실제 인증 정보는 제외)
-- `docs/`: 워크플로우 문서
+- `workflows/`: n8n workflow JSON files
+- `credentials/`: Credential templates (actual credentials excluded)
+- `docs/`: Workflow documentation
+  - [`RAG-Agent.md`](docs/RAG-Agent.md): Documentation for RAG (Retrieval Augmented Generation) agent workflow, including file processing and Supabase vector store integration
 
-## 사용 방법
+## Documentation
 
-1. 원하는 워크플로우 JSON 파일을 다운로드
-2. n8n에서 Import 기능을 사용하여 워크플로우 가져오기
-3. 필요한 인증 정보 설정
-4. 워크플로우 활성화
+For detailed information about specific workflows, please refer to the documentation in the `docs/` directory.
