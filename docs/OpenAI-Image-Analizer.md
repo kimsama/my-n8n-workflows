@@ -22,11 +22,7 @@ This n8n workflow is designed to automatically process images stored in Google D
 
 ### Image Analysis
 - **OpenAI Node**: Uses GPT-4-Vision (gpt-4o-mini model) to analyze images
-- Extracts the following information in JSON format:
-  - Date (YYYY-MM-DD format)
-  - Filename
-  - Category (classified into: 금, 금리, 주식, 부동산)
-  - Description (full text content)
+- Extracts based on the gien prompt
 
 ### Data Processing
 - **Code Node**: Processes the OpenAI response:
