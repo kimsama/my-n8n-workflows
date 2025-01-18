@@ -6,7 +6,7 @@
         "rule": {
           "interval": [
             {
-              "field": "minutes"
+              "field": "hours"
             }
           ]
         }
@@ -78,8 +78,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1400,
-        260
+        1320,
+        200
       ]
     },
     {
@@ -211,7 +211,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const response = $input.all()[0].json;\nlet content = response.content;\n\n// 날짜, 파일명, 카테고리 추출\nconst dateMatch = /\"date\":\\s*\"([^\"]+)\"/.exec(content);\nconst filenameMatch = /\"filename\":\\s*\"([^\"]+)\"/.exec(content);\nconst categoryMatch = /\"category\":\\s*\"([^\"]+)\"/.exec(content);\n\n// desc 추출을 위한 개선된 정규식\nconst descMatch = content.match(/\"desc\":\\s*\"([\\s\\S]*?)(?=\",|\"})/) || \n                 content.match(/\"desc\":\\s*\"([\\s\\S]*?)$/);  // 문자열 끝까지 매칭\n\n// Get the current file being processed\nconst currentFile = $('Download File').all();\nconst filename = currentFile.length > 0 ? currentFile[0].json.name : '';\n\nreturn {\n    json: {\n        date: dateMatch ? dateMatch[1] : '',\n        filename: filename,\n        category: categoryMatch ? categoryMatch[1] : '',\n        desc: descMatch ? descMatch[1]\n            .replace(/\\\\n/g, ' ')  // 줄바꿈을 공백으로 변환\n            .replace(/\\\\/g, '')    // 남은 백슬래시 제거\n            .replace(/\\s+/g, ' ')  // 연속된 공백을 하나로 변환\n            .trim() : ''\n    }\n};"
+        "jsCode": "// Get all responses and files\nconst responses = $input.all();\nconst downloadedFiles = $('Download File').all();\n\n// Process each response with its corresponding file\nconst processedItems = responses.map((response, index) => {\n    const content = response.json.content;\n    \n    // Extract data using regex\n    const dateMatch = /\"date\":\\s*\"([^\"]+)\"/.exec(content);\n    const categoryMatch = /\"category\":\\s*\"([^\"]+)\"/.exec(content);\n    const descMatch = content.match(/\"desc\":\\s*\"([\\s\\S]*?)(?=\",|\"})/) || \n                     content.match(/\"desc\":\\s*\"([\\s\\S]*?)$/);\n\n    // Get corresponding file\n    const filename = downloadedFiles[index]?.json?.name || '';\n\n    // Return structured data\n    return {\n        json: {\n            date: dateMatch ? dateMatch[1] : '',\n            filename: filename,\n            category: categoryMatch ? categoryMatch[1] : '',\n            desc: descMatch ? descMatch[1]\n                .replace(/\\\\n/g, ' ')\n                .replace(/\\\\/g, '')\n                .replace(/\\s+/g, ' ')\n                .trim() : ''\n        }\n    };\n});\n\n// Return all processed items\nreturn processedItems;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -297,7 +297,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get sheets data and drive files\nconst sheetsData = $('Google Sheets1').all();\nconst driveFiles = $('Google Drive').all();\n\nconsole.log(driveFiles);\n\n// Extract processed filenames from sheets\nlet processedFiles = sheetsData\n    .map(row => row.json.FileName)\n    .filter(name => name && name.trim() !== '');\n\nconsole.log(\"Processed files:\", processedFiles);\n\n// Process each drive file\nif (driveFiles && driveFiles.length > 0) {\n    // Map through each drive file directly\n    const newFiles = driveFiles\n        .filter(file => \n            file.json && \n            file.json.name &&\n            file.json.name.includes('IMG_') &&\n            !processedFiles.includes(file.json.name)\n        )\n        .map(file => file); // Keep the original structure\n\n    console.log(\"New files to process:\", newFiles.map(f => f.json.name));\n    \n    return newFiles.length > 0 ? newFiles : [];\n}\n\nreturn [];"
+        "jsCode": "// Get sheets data and drive files\nconst sheetsData = $('Google Sheets1').all();\nconst driveFiles = $('Google Drive').all();\n\n// Extract processed filenames from sheets and normalize them\nconst processedFiles = new Set(\n    sheetsData\n        .filter(row => row.json && row.json.FileName) // ensure row and FileName exist\n        .map(row => row.json.FileName.replace('.PNG', '').trim()) // normalize filename\n);\n\n// Process each drive file\nif (driveFiles && driveFiles.length > 0) {\n    // Map through each drive file directly\n    const newFiles = driveFiles\n        .filter(file => \n            file.json && \n            file.json.name &&\n            file.json.name.includes('IMG_') &&\n            !processedFiles.has(file.json.name.replace('.PNG', '').trim()) // normalize filename\n        )\n        .map(file => file);\n\n    console.log(\"Processed files:\", Array.from(processedFiles));\n    console.log(\"New files to process:\", newFiles.map(f => f.json.name));\n    \n    return newFiles.length > 0 ? newFiles : [];\n}\n\nreturn [];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -427,7 +427,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "07633f18-d8fe-4c23-a5f5-8778ead4bd45",
+  "versionId": "83c9ce9b-1bb6-4128-9251-1f08aab124b2",
   "meta": {
     "instanceId": "bba54e70d6282ae807fcf4aa81c048fd0e4b69be302c48875e79d29e97cf78a6"
   },
