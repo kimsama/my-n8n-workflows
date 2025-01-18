@@ -1,0 +1,436 @@
+{
+  "name": "Scheduled Text Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        820,
+        580
+      ],
+      "id": "0fabe4af-314a-488a-a4e2-d1079b76c7d8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "*",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "18N7AJb3uMoA7Rj09f-O_WpMwNV_yboun",
+            "mode": "list",
+            "cachedResultName": "00.predict-play",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/18N7AJb3uMoA7Rj09f-O_WpMwNV_yboun"
+          }
+        },
+        "options": {
+          "fields": "={{ mimeType == 'image/' }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1020,
+        580
+      ],
+      "id": "41aae95a-feca-49a1-b360-d0d097ab27ac",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ePqHOc1KhKDMbXEE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10646eae-ae46-4327-a4dc-9987c2d76173",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "1ac59b5c-d077-4bcd-a9a6-c180b2d16455",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "83cb5eeb-8108-496f-8f1f-105ebcace8f7",
+      "name": "Set File ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1400,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "이 이미지에서 텍스트를 읽고 다음 정보를 추출해주세요.\n반드시 완전한 JSON 형식으로 응답해주세요.\n\n추출할 정보:\n1. 글에서 언급된 날짜를 찾아 YYYY-MM-DD 형식으로 표시\n2. 파일 이름: 실제 파일 이름\n3. 글의 내용을 분석하여 다음 카테고리 중 하나로 분류: 금, 금리, 주식, 부동산\n4. 원문 텍스트 전체를 추출\n\n응답 형식:\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"filename\": \"파일이름\",\n  \"category\": \"카테고리명\",\n  \"desc\": \"원문텍스트\"\n}\n\n필수 확인사항:\n1. 모든 문자열은 반드시 따옴표(\")로 닫아주세요\n2. desc 필드의 텍스트가 중간에 잘리지 않도록 해주세요. \n3.  desc 필드의 텍스트는 완전한 문장으로 끝나야 합니다. \n4. 마지막에 반드시 중괄호(})를 닫아주세요\n5. 모든 JSON 구조를 완전히 닫아주세요. \n6. 모든 줄바꿈은 \\\\n으로 처리해주세요\n7. 불완전한 문장은 제외해주세요. \n8.  마지막 문자가 백슬래시(\\)로 끝나지 않도록 해주세요",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2000,
+        580
+      ],
+      "id": "4e94435e-a7bd-434b-8591-1438b8b19fae",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc",
+          "mode": "list",
+          "cachedResultName": "측노리",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Category": "={{$json.category}}",
+            "Date": "={{$json.date}}",
+            "Desc": "={{ $json.desc }}",
+            "FileName": "={{ $json.filename }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "No",
+              "displayName": "No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "FileName",
+              "displayName": "FileName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Desc",
+              "displayName": "Desc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ]
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        580
+      ],
+      "id": "d833e5a5-9361-4a9f-a001-6f7f1cd87dd8",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sw0dmuyvb6HtgAyf",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.all()[0].json;\nlet content = response.content;\n\n// 날짜, 파일명, 카테고리 추출\nconst dateMatch = /\"date\":\\s*\"([^\"]+)\"/.exec(content);\nconst filenameMatch = /\"filename\":\\s*\"([^\"]+)\"/.exec(content);\nconst categoryMatch = /\"category\":\\s*\"([^\"]+)\"/.exec(content);\n\n// desc 추출을 위한 개선된 정규식\nconst descMatch = content.match(/\"desc\":\\s*\"([\\s\\S]*?)(?=\",|\"})/) || \n                 content.match(/\"desc\":\\s*\"([\\s\\S]*?)$/);  // 문자열 끝까지 매칭\n\n// Get the current file being processed\nconst currentFile = $('Download File').all();\nconst filename = currentFile.length > 0 ? currentFile[0].json.name : '';\n\nreturn {\n    json: {\n        date: dateMatch ? dateMatch[1] : '',\n        filename: filename,\n        category: categoryMatch ? categoryMatch[1] : '',\n        desc: descMatch ? descMatch[1]\n            .replace(/\\\\n/g, ' ')  // 줄바꿈을 공백으로 변환\n            .replace(/\\\\/g, '')    // 남은 백슬래시 제거\n            .replace(/\\s+/g, ' ')  // 연속된 공백을 하나로 변환\n            .trim() : ''\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        580
+      ],
+      "id": "83f889b0-b085-4c18-87b0-6b4fb6bc367a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## Implementations\n 1) Schedule Trigger\n 2) Google Drive List (to get all files)\n 3) Google Sheets (Read operation - to get already processed files)\n 4) Code (to filter new files)\n 5) Continue with your existing flow (Download -> OpenAI -> etc)",
+        "height": 360,
+        "width": 1000
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        780,
+        400
+      ],
+      "id": "f10f3b55-cf81-416f-aa6d-de657710249c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Text extraction with OpenAI vision model\n * GPT4-O-mini (vision) \n * Extract text as a structured format from a given image \n * Regural expression is used for json formatting\n * Update corresponding google-sheet column ",
+        "height": 360,
+        "width": 780,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        400
+      ],
+      "id": "07fca0dd-c18a-4f76-8cc4-1c72c084e4fc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc",
+          "mode": "list",
+          "cachedResultName": "측노리",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12vaVr0izoR_v23eEwRzqOCtoXuhOXixaHGfQPPbkrrc/edit#gid=0"
+        },
+        "combineFilters": "OR",
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1220,
+        580
+      ],
+      "id": "1d2c2fce-b476-4deb-8c5b-4ccd033c1e3d",
+      "name": "Google Sheets1",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sw0dmuyvb6HtgAyf",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get sheets data and drive files\nconst sheetsData = $('Google Sheets1').all();\nconst driveFiles = $('Google Drive').all();\n\nconsole.log(driveFiles);\n\n// Extract processed filenames from sheets\nlet processedFiles = sheetsData\n    .map(row => row.json.FileName)\n    .filter(name => name && name.trim() !== '');\n\nconsole.log(\"Processed files:\", processedFiles);\n\n// Process each drive file\nif (driveFiles && driveFiles.length > 0) {\n    // Map through each drive file directly\n    const newFiles = driveFiles\n        .filter(file => \n            file.json && \n            file.json.name &&\n            file.json.name.includes('IMG_') &&\n            !processedFiles.includes(file.json.name)\n        )\n        .map(file => file); // Keep the original structure\n\n    console.log(\"New files to process:\", newFiles.map(f => f.json.name));\n    \n    return newFiles.length > 0 ? newFiles : [];\n}\n\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1420,
+        580
+      ],
+      "id": "d3565203-154b-4940-8031-d5231e57504c",
+      "name": "Code1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "id": "f3403592-7256-4949-9424-a7e22b115b2d",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1620,
+        580
+      ],
+      "executeOnce": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ePqHOc1KhKDMbXEE",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File ID": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "07633f18-d8fe-4c23-a5f5-8778ead4bd45",
+  "meta": {
+    "instanceId": "bba54e70d6282ae807fcf4aa81c048fd0e4b69be302c48875e79d29e97cf78a6"
+  },
+  "id": "1IHQSwvKbS6HlkYM",
+  "tags": []
+}
