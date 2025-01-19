@@ -297,7 +297,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get sheets data and drive files\nconst sheetsData = $('Google Sheets1').all();\nconst driveFiles = $('Google Drive').all();\n\n// Extract processed filenames from sheets and normalize them\nconst processedFiles = new Set(\n    sheetsData\n        .filter(row => row.json && row.json.FileName) // ensure row and FileName exist\n        .map(row => row.json.FileName.replace('.PNG', '').trim()) // normalize filename\n);\n\n// Process each drive file\nif (driveFiles && driveFiles.length > 0) {\n    // Map through each drive file directly\n    const newFiles = driveFiles\n        .filter(file => \n            file.json && \n            file.json.name &&\n            file.json.name.includes('IMG_') &&\n            !processedFiles.has(file.json.name.replace('.PNG', '').trim()) // normalize filename\n        )\n        .map(file => file);\n\n    console.log(\"Processed files:\", Array.from(processedFiles));\n    console.log(\"New files to process:\", newFiles.map(f => f.json.name));\n    \n    return newFiles.length > 0 ? newFiles : [];\n}\n\nreturn [];"
+        "jsCode": "// Get sheets data and drive files\nconst sheetsData = $('Google Sheets1').all();\nconst driveFiles = $('Google Drive').all();\n\n// Extract processed filenames from sheets and normalize them\nconst processedFiles = new Set(\n    sheetsData\n        .filter(row => row.json && row.json.FileName) // ensure row and FileName exist\n        .map(row => row.json.FileName.replace('.PNG', '').trim()) // normalize filename\n);\n\n// Process each drive file\nif (driveFiles && driveFiles.length > 0) {\n    // Map through each drive file directly\n    const newFiles = driveFiles\n        .filter(file => \n            file.json && \n            file.json.name &&\n            file.json.name.includes('IMG_') &&\n            !processedFiles.has(file.json.name.replace('.PNG', '').trim()) // normalize filename\n        )\n        .map(file => file);\n\n    console.log(\"Processed files:\", Array.from(processedFiles));\n    console.log(\"New files to process:\", newFiles.map(f => f.json.name));\n\n    // Add batching - process 5 files at a time\n    const BATCH_SIZE = 5;\n    if (newFiles.length > BATCH_SIZE) {\n        console.log(`Processing first ${BATCH_SIZE} files of ${newFiles.length}`);\n        return newFiles.slice(0, BATCH_SIZE);\n    }  \n    \n    return newFiles.length > 0 ? newFiles : [];\n}\n\nreturn [];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -427,7 +427,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "83c9ce9b-1bb6-4128-9251-1f08aab124b2",
+  "versionId": "c22e9339-f2bd-4514-8316-fdead71f2241",
   "meta": {
     "instanceId": "bba54e70d6282ae807fcf4aa81c048fd0e4b69be302c48875e79d29e97cf78a6"
   },
