@@ -1,0 +1,801 @@
+{
+  "name": "VBS4 24.2 RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "adb6beae-e937-49ae-b8a1-6226a5576619",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        200,
+        980
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "61167398-b31c-451d-b9b6-ad1757488887",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        920
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "user_documents",
+        "description": "Contains all the user's documents that you can check for context to answer user questions."
+      },
+      "id": "033d2691-27a2-4d36-8333-fa0793f1b6e6",
+      "name": "Retrieve Documents",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        900,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Agent Tools for RAG",
+        "height": 609,
+        "width": 583,
+        "color": 4
+      },
+      "id": "2dfd0bc1-d4bd-49d2-9d6d-e1ecedad8eee",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "3b753588-39f4-44d7-8c62-dbb13974f277",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        940,
+        1060
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## RAG AI Agent with Chat Interface\n\nEditor Field is used to change input JSON data to match as the same format as OpenWeb-UI sends. ",
+        "height": 605,
+        "width": 873
+      },
+      "id": "368beda5-1fbc-422d-b488-79ced062ae9e",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "vbs4 network lobby",
+        "options": {}
+      },
+      "id": "076474aa-aad2-436c-b221-2e269b222d4a",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -140,
+        740
+      ],
+      "webhookId": "e985d15f-b2f6-456d-be15-97e0b1544a40"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.chatInput }}",
+        "options": {
+          "systemMessage": "You are a personal assistant who helps answer questions from a corpus of documents when you don't know the answer yourself."
+        }
+      },
+      "id": "b3ce25aa-2eda-4037-aa6d-a5c8f3f0ea59",
+      "name": "RAG AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        240,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "id": "cdda9791-5dbe-4782-b6d1-f04889789d61",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        780,
+        920
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "oWrKLsEEn1hzsRBW",
+          "name": "Supabase Clound account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/data/shared/",
+        "events": [
+          "add",
+          "change",
+          "unlink",
+          "addDir",
+          "unlinkDir"
+        ],
+        "options": {
+          "awaitWriteFinish": true,
+          "followSymlinks": true,
+          "usePolling": true
+        }
+      },
+      "id": "bc97690d-79aa-4675-a81e-c00de92bb6ca",
+      "name": "Local File Trigger",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "position": [
+        -1280,
+        1740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "command": "=find {{ $json.directory }} -type f -name \"*.md\" -print || true; \\\necho \"===\"; \\\nfind {{ $json.directory }} -type d -print || true"
+      },
+      "id": "8bc89ceb-9904-4481-8bed-9c962fbec2d6",
+      "name": "Get Files and Folders",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        -740,
+        1640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad893795-cae8-4418-99e0-2c68126337d3",
+              "name": "files",
+              "type": "array",
+              "value": "={{ $json.stdout.split('===')[0].split('\\n').filter(item => !item.endsWith('Zone.Identifier')).compact() }}"
+            },
+            {
+              "id": "0e7e8571-6b86-481d-a20c-3a7c621c562f",
+              "name": "folders",
+              "type": "array",
+              "value": "={{ $json.stdout.split('===')[1].split('\\n').compact() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb97a3ca-273e-4ea2-bcdf-353b363a28c6",
+      "name": "Files and Folders to Array",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -560,
+        1640
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35ea70c4-8669-4975-a68d-bbaa094713c0",
+              "name": "directory",
+              "type": "string",
+              "value": "=/data/shared/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e7f6074e-eefd-4f16-891e-33f9a911b82e",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1000,
+        1640
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "9be5a175-e7aa-4d68-9ddc-8b43b43e2d37",
+              "operator": {
+                "type": "array",
+                "operation": "lengthGte",
+                "rightType": "number"
+              },
+              "leftValue": "={{ $json.files }}",
+              "rightValue": "={{ 1 }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fa864d59-6603-4798-a696-c593669011cf",
+      "name": "If Has Target Files...",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -380,
+        1640
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Step 1. Select the target folder\n[Read more about local file trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.localfiletrigger)\n\nIn this workflow, we'll monitor a specific folder on disk that n8n has access to. Since we're using docker, we can either use the n8n volume or mount a folder from the host machine.\n\nThe local file trigger is useful to execute the workflow whenever changes are made to our target folder.",
+        "height": 501.2939838391483,
+        "width": 483.7926535356806,
+        "color": 7
+      },
+      "id": "8beac2e3-e06f-4598-9803-768ccfeacc89",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1320,
+        1340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Step 2. Identify files that need to be organised\n[Read more about Execute Command node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.executecommand)\n\nFor all Files in the root level of our selected target folder, we want  them to be sorted and moved into categorised subdirectories. In this step, we'll use linux commands to get a list of files and folders currently present in the target folder.",
+        "height": 391.527066537946,
+        "width": 583.2857596176409,
+        "color": 7
+      },
+      "id": "892aa20d-8b6e-4f7a-8171-5e49c59147a5",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -800,
+        1460
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        1580
+      ],
+      "id": "5482540b-ea13-485c-b956-62707f3986df",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $json.filePath }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        80,
+        1620
+      ],
+      "id": "0d60f21a-8cdc-46a2-a6ce-0b5dbb7a9261",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.files.map(file => {\n  return {\n    json: {\n      filePath: file  // or '/your/base/path/' + file\n    },\n    binary: {\n        // 명시적으로 binary 필드를 생성\n        data: null  // Read Binary File 노드가 이 필드를 채울 것입니다\n    }    \n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        1620
+      ],
+      "id": "da13e516-2370-47f7-9b2f-e2457db6389a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## Step 3. Read file and Extract \nIn n8n's Read Binary File node when working with an array of filenames, you'll need to properly structure the input using an Expression. ",
+        "height": 380,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        1460
+      ],
+      "id": "77f197d4-ab44-4ab9-821b-de6e72918b5d",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        280,
+        1620
+      ],
+      "id": "109f5f0c-4e82-445e-bc64-755b1339dd67",
+      "name": "Extract from HTML"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "fe0a803e-a3b9-4107-9fca-16a1be976117",
+      "name": "Insert into Supabase Vectorstore2",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        680,
+        1540
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "oWrKLsEEn1hzsRBW",
+          "name": "Supabase Clound account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "576c8d6e-c048-4db7-b341-544373d1f3b9",
+      "name": "Embeddings OpenAI2",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        1720
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{$json.data}}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_id",
+                "value": "={{ $json.filePath }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "65873d60-9045-4790-b561-1af023f844f0",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        820,
+        1720
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "4b14fc01-3514-4609-8d16-4f034bde0e44",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        1840
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "tableName": "n8n_vbs4_chat_histories"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        980
+      ],
+      "id": "691bc66b-21aa-4945-a4d4-169a96338125",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "3h2Aup28PmLNHEKG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoke",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        1020
+      ],
+      "id": "b48db92a-670e-49de-9705-ce0469a07d69",
+      "name": "Webhook",
+      "webhookId": "b4971a30-d6ca-4577-ba03-a546faec9307"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        740
+      ],
+      "id": "9fadbe0e-ad38-4e8f-b1dc-6b92511100a6",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17ece138-8e50-4f1a-9083-570da6ebb2f2",
+              "name": "body",
+              "value": "={{ { \"chatInput\": $json.chatInput,\n   \"sessionId\": $json.sessionId } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        40,
+        740
+      ],
+      "id": "1cc12aac-681f-4647-88b7-f2c6a8eb8d2f",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Documents": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retrieve Documents",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Files and Folders": {
+      "main": [
+        [
+          {
+            "node": "Files and Folders to Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Files and Folders to Array": {
+      "main": [
+        [
+          {
+            "node": "If Has Target Files...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Get Files and Folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Target Files...": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from HTML": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9abef9c6-080a-4deb-902c-f308ecc25d58",
+  "meta": {
+    "instanceId": "bba54e70d6282ae807fcf4aa81c048fd0e4b69be302c48875e79d29e97cf78a6"
+  },
+  "id": "S5CVZLvGhlyzcaNX",
+  "tags": []
+}
