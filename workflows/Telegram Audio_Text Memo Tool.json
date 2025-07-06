@@ -1,0 +1,641 @@
+{
+  "name": "Telegram Audio/Text Memo Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "c113656f-26c0-4ef8-9a7f-5e25991a08d0",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1560,
+        260
+      ],
+      "webhookId": "a1cd840a-7f06-475d-b594-a0bf0fd0f074",
+      "credentials": {
+        "telegramApi": {
+          "id": "5ToGvybNzSIO9U3B",
+          "name": "Telegram account - MassAssistantBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "voice-check",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice_message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "text-check",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text_message"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unsupported"
+        }
+      },
+      "id": "799f8977-ac18-434b-9167-df46e7ba2883",
+      "name": "Route by Message Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1340,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "ko"
+        }
+      },
+      "id": "5c7a32e4-b123-4ab3-80c8-52b16db897fe",
+      "name": "Transcribe Audio",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -720,
+        -20
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "j59Aj1T2U7nAuL02",
+          "name": "OpenAi account"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueErrorOutput",
+      "notes": "OpenAI transcriptinon error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "memo-text",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "source-type",
+              "name": "source_type",
+              "value": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d845954-0309-4fbb-9e51-5520ea7b4bac",
+      "name": "Prepare Text Memo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "memo-text",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "source-type",
+              "name": "source_type",
+              "value": "audio",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2691e63-4d46-4daa-a716-b1cfcd473f27",
+      "name": "Prepare Audio Memo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -460,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "date-field",
+              "name": "date",
+              "value": "={{ $now.format('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "memo-field",
+              "name": "memo",
+              "value": "={{ $json.text || 'Processing failed' }}",
+              "type": "string"
+            },
+            {
+              "id": "note-field",
+              "name": "note",
+              "value": "={{ 'From: ' + $('Telegram Trigger').item.json.message.from.first_name + ' ' + ($('Telegram Trigger').item.json.message.from.last_name || '') + ' (@' + ($('Telegram Trigger').item.json.message.from.username || 'N/A') + ') - Source: ' + ($json.source_type || 'unknown') }}",
+              "type": "string"
+            },
+            {
+              "id": "130317e4-0c7b-4851-8ece-3e80c5f7cac7",
+              "name": "telegram_user_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7f0e379e-a5ce-4207-b3df-65122e6633e4",
+              "name": "timestamp",
+              "value": "={{ $('Telegram Trigger').item.json.message.date }}",
+              "type": "string"
+            },
+            {
+              "id": "source-type",
+              "name": "source_type",
+              "value": "={{ $json.source_type || 'unknown' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ac67e27e-eaf0-4acb-a7b0-0b25a138467f",
+      "name": "Format Memo Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Qr8_t-hTIaaI4z0bvCzQKE1vxYG-WphAkZEKxWRrGMw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Qr8_t-hTIaaI4z0bvCzQKE1vxYG-WphAkZEKxWRrGMw/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "note": "={{ $json.note }}",
+            "memo": "={{ $json.memo }}",
+            "telegram_user_id": "={{ $json.telegram_user_id }}",
+            "timestamp": "={{ $json.timestamp }}",
+            "source_type": "={{ $json.source_type }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "memo",
+              "displayName": "memo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "telegram_user_id",
+              "displayName": "telegram_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_type",
+              "displayName": "source_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "=RAW"
+        }
+      },
+      "id": "17fac934-4333-4b5b-959e-d94c96373939",
+      "name": "Add to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        120,
+        260
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "1Yyv5I7zXeydViLF",
+          "name": "Google Service Account account"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ 'Memo added successfully! Content: ' + $('Format Memo Data').item.json.memo + ' Date: ' + $('Format Memo Data').item.json.date + ' Source: ' + ($('Format Memo Data').item.json.source_type === 'audio' ? 'Audio (transcribed)' : 'Text message') }}",
+        "additionalFields": {}
+      },
+      "id": "a58d75da-8881-4cca-82fc-31d1a734f881",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        360,
+        240
+      ],
+      "webhookId": "e69eba94-3a1f-4cb2-901b-42e77b9018a5",
+      "credentials": {
+        "telegramApi": {
+          "id": "5ToGvybNzSIO9U3B",
+          "name": "Telegram account - MassAssistantBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "I can only process text messages or voice messages. Send me: A voice message (I'll transcribe it) or A text message (I'll save it directly). Try again with one of these formats!",
+        "additionalFields": {}
+      },
+      "id": "5c4555ef-7b9b-46c1-ad57-bf2f3f38dfa0",
+      "name": "Send Error Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        560
+      ],
+      "webhookId": "1f5aa4f8-c968-4a80-89e9-22b8283521fa",
+      "credentials": {
+        "telegramApi": {
+          "id": "5ToGvybNzSIO9U3B",
+          "name": "Telegram account - MassAssistantBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Sorry, something went wrong while processing your memo. Please try again later. If the problem persists, contact support. For audio messages, ensure the file is under 25MB and in a supported format.",
+        "additionalFields": {}
+      },
+      "id": "e98d04f4-d251-4f82-b100-892b28d7cbe6",
+      "name": "Handle Processing Errors",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        360,
+        480
+      ],
+      "webhookId": "583da0a1-8629-4736-a4ba-d0c62b434ee7",
+      "credentials": {
+        "telegramApi": {
+          "id": "5ToGvybNzSIO9U3B",
+          "name": "Telegram account - MassAssistantBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        -20
+      ],
+      "id": "fc73a0a3-a913-4438-baf5-2b07574e1767",
+      "name": "Get Audio Message",
+      "webhookId": "8f9dfc55-536f-4df1-9eab-074a2110795e",
+      "credentials": {
+        "telegramApi": {
+          "id": "5ToGvybNzSIO9U3B",
+          "name": "Telegram account - MassAssistantBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Audio Message Processing\n",
+        "height": 320,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -180
+      ],
+      "id": "1e914e90-af78-4b90-8568-2f4ccfeabc06",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Text Message Processing\n",
+        "height": 260,
+        "width": 800,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        180
+      ],
+      "id": "112ba060-2379-437f-be56-dc60ebde5ab4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Error\n",
+        "height": 280,
+        "width": 800,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        480
+      ],
+      "id": "38b92942-7502-426d-aa0e-69f72590c309",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Formatting and Store on Googlesheet\n",
+        "height": 340,
+        "width": 740,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        140
+      ],
+      "id": "c78b31f2-51fc-42aa-8c32-37c00e016713",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Telegram Trigger\n",
+        "height": 260,
+        "width": 480,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        180
+      ],
+      "id": "b57faddb-b4ee-4656-b869-4eca0ff6a2ca",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route by Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Message Type": {
+      "main": [
+        [
+          {
+            "node": "Get Audio Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Text Memo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio": {
+      "main": [
+        [
+          {
+            "node": "Prepare Audio Memo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Processing Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Text Memo": {
+      "main": [
+        [
+          {
+            "node": "Format Memo Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Audio Memo": {
+      "main": [
+        [
+          {
+            "node": "Format Memo Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Memo Data": {
+      "main": [
+        [
+          {
+            "node": "Add to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Processing Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio Message": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "701e90e8-3edd-4954-8d89-3de1abb5edb7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bba54e70d6282ae807fcf4aa81c048fd0e4b69be302c48875e79d29e97cf78a6"
+  },
+  "id": "DWwHH8jvRr8Nnpdq",
+  "tags": []
+}
