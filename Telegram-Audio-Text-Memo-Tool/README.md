@@ -4,6 +4,12 @@
 
 이 n8n workflow는 Telegram을 통해 음성 메시지와 텍스트 메시지를 받아서 자동으로 Google Sheets에 메모로 저장하는 봇입니다. 음성 메시지는 OpenAI의 Whisper API를 사용하여 자동으로 텍스트로 변환됩니다.
 
+## 참고 동영상
+
+이 워크플로우에 대한 자세한 설명과 사용법은 아래 YouTube 동영상을 참고하세요:
+
+[![Telegram Audio/Text Memo Bot 가이드](https://img.youtube.com/vi/yyc0j8DZvek/maxresdefault.jpg)](https://www.youtube.com/watch?v=yyc0j8DZvek)
+
 ## 주요 기능
 
 - **텍스트 메시지 저장**: Telegram으로 보낸 텍스트 메시지를 바로 메모로 저장
